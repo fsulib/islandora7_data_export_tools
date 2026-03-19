@@ -4,8 +4,8 @@
 import subprocess
 
 # Clear out data directory
-subprocess.run(["rm -rf ../data/*"], shell=True)
-subprocess.run(["mkdir ../data/root"], shell=True)
+subprocess.run(["rm -rf ../output/*"], shell=True)
+subprocess.run(["mkdir ../output/root"], shell=True)
 
 # Variables
 root_collection_pid_path = "root/fsu:digital_library"
