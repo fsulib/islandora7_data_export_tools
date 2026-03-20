@@ -4,6 +4,7 @@
 import datetime
 import os
 import subprocess
+import time
 
 # Clear out data directory
 subprocess.run(["rm -rf ../output/*"], shell=True)
@@ -11,8 +12,9 @@ subprocess.run(["mkdir ../output/root"], shell=True)
 # Variables
 logtime = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
 output_path = os.getcwd() + "/../output/root/"
-collections_with_noncollection_children = []
 collections_to_process = ["fsu:digital_library"]
+collections_processed = []
+collections_with_noncollection_children = []
 
 # Functions
 def log(message):
@@ -49,7 +51,7 @@ def get_collection_children_pids(collection_pid_path):
   return child_data
 
 
-def export_collection_data(collection_pid_path):
+def export_collection(collection_pid_path):
   collection_directory = get_collection_directory_path(collection_pid_path)
   collection_file_prefix = get_collection_file_prefix(collection_pid_path)
   collection_pid = get_collection_pid_from_path(collection_pid_path)
@@ -72,6 +74,7 @@ def export_collection_data(collection_pid_path):
   subprocess.run(["drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=MODS --datastreams_directory={0}".format(collection_directory, collection_file_prefix)], shell=True, capture_output=True, text=True).stdout.splitlines()
 
   collections_to_process.remove(collection_pid_path)
+  collections_processed.append(collection_pid_path)
   log("Finished export of {}.".format(collection_pid_path))
   if collections_to_process:
     export_collection_data(collections_to_process[0])
@@ -88,10 +91,13 @@ def write_collections_with_noncollection_children_list():
 
 
 # Main
+starttime = int(time.time())
 log("Beginning collection data export.")
 
-export_collection_data('fsu:digital_library')
+export_collection('fsu:digital_library')
 
-
-write_collections_with_noncollection_children_list()
 log("Finished collection data export.")
+write_collections_with_noncollection_children_list()
+endtime = int(time.time())
+totaltime = endtime - starttime
+log("Export took {} seconds to process {} collections: \n{}".format(totaltime, len(collections_processed), "\n".join(collections_processed)))
