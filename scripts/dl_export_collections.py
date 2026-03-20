@@ -77,7 +77,7 @@ def export_collection(collection_pid_path):
   collections_processed.append(collection_pid_path)
   log("Finished export of {}.".format(collection_pid_path))
   if collections_to_process:
-    export_collection_data(collections_to_process[0])
+    export_collection(collections_to_process[0])
 
 
 def write_collections_with_noncollection_children_list():
