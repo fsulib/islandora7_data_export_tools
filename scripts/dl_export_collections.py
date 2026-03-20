@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 
+
 # Imports
 import datetime
 import os
 import subprocess
 import time
 
+
 # Clear out data directory
 subprocess.run(["rm -rf ../output/*"], shell=True)
 subprocess.run(["mkdir ../output/root"], shell=True)
+
+
 # Variables
 logtime = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
 output_path = os.getcwd() + "/../output/root/"
 collections_to_process = ["fsu:digital_library"]
 collections_processed = []
 collections_with_noncollection_children = []
+
 
 # Functions
 def log(message):
@@ -50,7 +55,6 @@ def get_collection_children_pids(collection_pid_path):
     collections_with_noncollection_children.append(collection_pid_path)
   return child_data
 
-
 def export_collection(collection_pid_path):
   collection_directory = get_collection_directory_path(collection_pid_path)
   collection_file_prefix = get_collection_file_prefix(collection_pid_path)
@@ -78,7 +82,6 @@ def export_collection(collection_pid_path):
   log("Finished export of {}.".format(collection_pid_path))
   if collections_to_process:
     export_collection(collections_to_process[0])
-
 
 def write_collections_with_noncollection_children_list():
   if collections_with_noncollection_children:
