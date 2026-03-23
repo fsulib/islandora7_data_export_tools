@@ -50,7 +50,7 @@ def write_file_to_collection_directory(collection_pid_path, filename, data):
     log("Writing file {} to {}.".format(filename, collection_directory))
     if not os.path.isdir(collection_directory):
         os.mkdir(collection_directory)
-    file = open("{}/{}".format(collection_directory, filename), "a")
+    file = open("{}/../{}".format(collection_directory, filename), "a")
     file.write(data)
 
 
@@ -114,7 +114,7 @@ def export_collection(collection_pid_path):
     # Get RELS-EXT datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=RELS-EXT --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELS-EXT --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -126,7 +126,7 @@ def export_collection(collection_pid_path):
     # Get DC datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=DC --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DC --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -138,7 +138,7 @@ def export_collection(collection_pid_path):
     # Get MODS datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=MODS --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=MODS --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -150,7 +150,7 @@ def export_collection(collection_pid_path):
     # Get POLICY datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=POLICY --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=POLICY --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -162,7 +162,7 @@ def export_collection(collection_pid_path):
     # Get DESC-TEXT datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=DESC-TEXT --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DESC-TEXT --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -174,7 +174,7 @@ def export_collection(collection_pid_path):
     # Get RELATED-LINKS datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=RELATED-LINKS --datastreams_directory={0}".format(
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELATED-LINKS --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -182,6 +182,19 @@ def export_collection(collection_pid_path):
         capture_output=True,
         text=True,
     ).stdout.splitlines()
+
+    # Get PAGE_STREAM_X datastreams
+    for i in range(1, 11):
+      subprocess.run(
+          [
+              "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
+                  collection_directory, collection_file_prefix, i
+              )
+          ],
+          shell=True,
+          capture_output=True,
+          text=True,
+      ).stdout.splitlines()
 
     # Check for IP embargoes and log if found
     ip_embargo_check_result = subprocess.run(
