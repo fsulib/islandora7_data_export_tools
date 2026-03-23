@@ -79,7 +79,7 @@ def get_collection_children_pids(collection_pid_path):
     ).stdout.splitlines()
     if child_data["noncollections"]:
         log("{} contains noncollection children.".format(collection_pid_path))
-        collections_with_noncollection_children.append(collection_pid_path)
+        collections_with_noncollection_children.append("{}, {}".format(len(child_data['noncollections']), collection_pid_path))
     return child_data
 
 
