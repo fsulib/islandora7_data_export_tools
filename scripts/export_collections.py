@@ -3,6 +3,7 @@
 
 # Imports
 import datetime
+import json
 import os
 import subprocess
 import time
@@ -19,6 +20,7 @@ output_path = os.getcwd() + "/../output/root/"
 collections_to_process = ["fsu:digital_library"]
 collections_processed = []
 collections_with_noncollection_children = []
+collections_with_ip_embargoes = []
 
 
 # Functions
@@ -86,9 +88,11 @@ def export_collection(collection_pid_path):
     collection_file_prefix = get_collection_file_prefix(collection_pid_path)
     collection_pid = get_collection_pid_from_path(collection_pid_path)
     log("Beginning export of {}.".format(collection_pid_path))
+
     write_file_to_collection_directory(
         collection_pid_path, "{}.pid".format(collection_file_prefix), collection_pid
     )
+
     collection_child_pids = get_collection_children_pids(collection_pid_path)
     if collection_child_pids["collections"]:
         write_file_to_collection_directory(
@@ -106,6 +110,8 @@ def export_collection(collection_pid_path):
             "{}.child-noncollections.pids".format(collection_file_prefix),
             "\n".join(collection_child_pids["noncollections"]),
         )
+
+    # Get RELS-EXT datastream
     subprocess.run(
         [
             "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=RELS-EXT --datastreams_directory={0}".format(
@@ -116,6 +122,8 @@ def export_collection(collection_pid_path):
         capture_output=True,
         text=True,
     ).stdout.splitlines()
+
+    # Get DC datastream
     subprocess.run(
         [
             "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=DC --datastreams_directory={0}".format(
@@ -126,6 +134,8 @@ def export_collection(collection_pid_path):
         capture_output=True,
         text=True,
     ).stdout.splitlines()
+
+    # Get MODS datastream
     subprocess.run(
         [
             "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=MODS --datastreams_directory={0}".format(
@@ -136,6 +146,64 @@ def export_collection(collection_pid_path):
         capture_output=True,
         text=True,
     ).stdout.splitlines()
+
+    # Get POLICY datastream
+    subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=POLICY --datastreams_directory={0}".format(
+                collection_directory, collection_file_prefix
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    # Get DESC-TEXT datastream
+    subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=DESC-TEXT --datastreams_directory={0}".format(
+                collection_directory, collection_file_prefix
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    # Get RELATED-LINKS datastream
+    subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/{1}.pid --dsid=RELATED-LINKS --datastreams_directory={0}".format(
+                collection_directory, collection_file_prefix
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    # Check for IP embargoes and log if found
+    ip_embargo_check_result = subprocess.run(
+        [
+            "drush -u 1 sqlq \"select pid from islandora_ip_embargo_embargoes where pid = '{}'\"".format(
+                collection_pid
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    if ip_embargo_check_result[0] == collection_pid:
+        log("IP embargo detected on {}.".format(collection_pid_path))
+        collections_with_ip_embargoes.append(collection_pid_path)
+        ip_embargo_data = {"ip_embargo": True}
+        write_file_to_collection_directory(
+            collection_pid_path,
+            "{}.embargoes.json".format(collection_file_prefix),
+            json.dumps(ip_embargo_data),
+        )
+
     collections_to_process.remove(collection_pid_path)
     collections_processed.append(collection_pid_path)
     log("Finished export of {}.".format(collection_pid_path))
@@ -159,12 +227,27 @@ def write_collections_with_noncollection_children_list():
         log("No collections with noncollection children were detected.")
 
 
+def write_collections_with_ip_embargoes_list():
+    if collections_with_ip_embargoes:
+        formatted_data = "\n".join(collections_with_ip_embargoes)
+        log(
+            "The following collections with IP embargoes were detected and saved to root/collections_with_ip_embargoes.txt:\n{}".format(
+                formatted_data
+            )
+        )
+        file = open("{}/collections_with_ip_embargoes.txt".format(output_path), "a")
+        file.write(formatted_data)
+    else:
+        log("No collections with IP embargoes were detected.")
+
+
 # Main
 starttime = int(time.time())
 log("Beginning collection data export.")
 export_collection("fsu:digital_library")
 log("Finished collection data export.")
 write_collections_with_noncollection_children_list()
+write_collections_with_ip_embargoes_list()
 endtime = int(time.time())
 totaltime = endtime - starttime
 log(
