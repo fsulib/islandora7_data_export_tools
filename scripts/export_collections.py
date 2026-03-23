@@ -47,7 +47,7 @@ def get_collection_file_prefix(collection_pid_path):
 
 def write_file_to_collection_directory(collection_pid_path, filename, data):
     collection_directory = get_collection_directory_path(collection_pid_path)
-    log("Writing file {} to {}.".format(filename, collection_directory))
+    log("Writing file {} to {}/..".format(filename, collection_directory))
     if not os.path.isdir(collection_directory):
         os.mkdir(collection_directory)
     file = open("{}/../{}".format(collection_directory, filename), "a")
