@@ -183,8 +183,20 @@ def export_collection(collection_pid_path):
         text=True,
     ).stdout.splitlines()
 
+    # Get BANNER datastream
+    subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=BANNER --datastreams_directory={0}/..".format(
+                collection_directory, collection_file_prefix
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
     # Get PAGE_STREAM_X datastreams
-    for i in range(1, 11):
+    for i in range(1, 6):
       subprocess.run(
           [
               "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
