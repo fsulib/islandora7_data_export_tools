@@ -245,7 +245,7 @@ def write_collections_with_noncollection_children_list():
             )
         )
         file = open(
-            "{}/collections_with_noncollection_children.txt".format(output_path), "a"
+            "{}/collections_with_noncollection_children.csv".format(output_path), "a"
         )
         file.write(formatted_data)
     else:
