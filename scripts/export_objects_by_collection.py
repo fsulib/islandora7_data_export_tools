@@ -197,6 +197,18 @@ def write_object_embargo_report(object_pid_path, embargoes):
         collection_pid_path, object_filename_prefix + ".embargoes.csv", embargoes_csv
     )
 
+def process_hierarchichal_object(object_data):
+  pid = object_data['pid']
+  print("Hierarchichal object detected: {}".format(pid)
+    match object_data['cmodel']:
+      case 'islandora:compoundCModel':
+        print("{} is a compound".format(pid))
+      case 'islandora:bookCModel':
+        print("{} is a book".format(pid))
+      case 'islandora:newspaperCModel':
+        print("{} is a newspaper".format(pid))
+      case _:
+        print("{} is a mystery hierarchy".format(pid))
 
 # Main
 collection_pid = get_pid_from_path(collection_pid_path)
@@ -206,11 +218,15 @@ noncollection_pids = read_noncollection_pidfile(collection_pid_path)
 
 for pid in noncollection_pids:
     object_data = get_noncollection_object_data(pid)
+    print(object_data)
     object_filename_prefix = get_pid_file_prefix(object_data["pid"])
     if object_data["embargoes"]:
         write_object_embargo_report(
             collection_pid_path + "/" + pid, object_data["embargoes"]
         )
+
+    if object_data["cmodel"] in ['islandora:compoundCModel', 'islandora:bookCModel', 'islandora:newspaperCModel']:
+      process_hierarchichal_object(object_data)
 
 
 write_collection_embargo_report(collection_pid_path, objects_with_embargoes)
