@@ -63,12 +63,19 @@ def read_noncollection_pidfile(collection_pid_path):
     return noncollection_pids
 
 
-def get_noncollection_object_datastreams(collection_pid_path):
+def get_noncollection_object_datastreams(pid_path):
     datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
     # metadata_datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
     # asset_datastreams = ["OBJ", "PDF"]
-    collection_directory = get_pid_directory_path(collection_pid_path)
-    collection_file_prefix = get_pid_file_prefix(collection_pid_path)
+
+    log(
+        "Beginning retrieval of the following datastreams for children of {}: {}.".format(
+            pid_path, ", ".join(datastreams)
+        ),
+        collection_pid_path,
+    )
+    collection_directory = get_pid_directory_path(pid_path)
+    collection_file_prefix = get_pid_file_prefix(pid_path)
     for datastream in datastreams:
         subprocess.run(
             [
@@ -80,9 +87,17 @@ def get_noncollection_object_datastreams(collection_pid_path):
             capture_output=True,
             text=True,
         ).stdout.splitlines()
+    log(
+        "Retrieval of datastreams for children of {} complete.".format(pid_path),
+        collection_pid_path,
+    )
 
 
 def get_noncollection_object_embargoes(noncollection_pid):
+    log(
+        "Beginning retrieval of embargo data for {}".format(noncollection_pid),
+        collection_pid_path,
+    )
     embargoes = []
 
     # IP embargo check
@@ -133,10 +148,18 @@ def get_noncollection_object_embargoes(noncollection_pid):
 
     if embargoes:
         objects_with_embargoes[noncollection_pid] = embargoes
+    log(
+        "Retrieval of embargo data for {} complete.".format(noncollection_pid),
+        collection_pid_path,
+    )
     return embargoes
 
 
 def get_noncollection_object_data(noncollection_pid):
+    log(
+        "Beginning extraction of data for {}".format(noncollection_pid),
+        collection_pid_path,
+    )
     object_data = {}
     object_data["pid"] = noncollection_pid
     object_data["embargoes"] = get_noncollection_object_embargoes(noncollection_pid)
@@ -150,12 +173,16 @@ def get_noncollection_object_data(noncollection_pid):
         capture_output=True,
         text=True,
     ).stdout
+    log(
+        "Extraction of data for {} complete.".format(noncollection_pid),
+        collection_pid_path,
+    )
     return object_data
 
 
 def write_file_to_pid_directory(pid_path, filename, data):
     pid_directory = get_pid_directory_path(pid_path)
-    log("Writing file {} to {}".format(filename, pid_directory), pid_path)
+    log("Writing file {} to {}".format(filename, pid_directory), collection_pid_path)
     file = open("{}/{}".format(pid_directory, filename), "a")
     file.write(data)
 
@@ -185,7 +212,6 @@ def write_object_embargo_report(object_pid_path, embargoes):
     object_pid = get_pid_from_path(object_pid_path)
     object_filename_prefix = get_pid_file_prefix(object_pid)
     embargoes_list = []
-
     for embargo in embargoes:
         if embargo["type"] == "IP":
             csv_formatted_embargo = "{}, {}".format("IP", "indefinite")
@@ -197,25 +223,83 @@ def write_object_embargo_report(object_pid_path, embargoes):
         collection_pid_path, object_filename_prefix + ".embargoes.csv", embargoes_csv
     )
 
-def process_hierarchichal_object(object_data):
-  pid = object_data['pid']
-  print("Hierarchichal object detected: {}".format(pid)
-    match object_data['cmodel']:
-      case 'islandora:compoundCModel':
-        print("{} is a compound".format(pid))
-      case 'islandora:bookCModel':
-        print("{} is a book".format(pid))
-      case 'islandora:newspaperCModel':
-        print("{} is a newspaper".format(pid))
-      case _:
-        print("{} is a mystery hierarchy".format(pid))
+
+def process_hierarchichal_object(collection_pid_path, object_data):
+    if object_data["cmodel"] == "islandora:compoundCModel":
+        process_compound_object(collection_pid_path, object_data)
+    elif object_data["cmodel"] == "islandora:bookCModel":
+        process_book_object(collection_pid_path, object_data)
+    elif object_data["cmodel"] == "islandora:newspaperCModel":
+        process_newspaper_object(collection_pid_path, object_data)
+    else:
+        log(
+            "Error processing hierarchichal object {} with cmodel {}".format(
+                object_data["pid"], object_data["cmodel"]
+            ),
+            collection_pid_path,
+        )
+
+
+def process_compound_object(collection_pid_path, object_data):
+    log(
+        "Compound object detected, beginning processing of {}.".format(
+            object_data["pid"]
+        ),
+        collection_pid_path,
+    )
+    # drush -u 1 islandora_datastream_crud_fetch_pids --solr_query="RELS_EXT_isConstituentOf_uri_s:info\:fedora/fsu\:723002"
+    log(
+        "Compound object processing of {} complete.".format(object_data["pid"]),
+        collection_pid_path,
+    )
+
+
+def process_book_object(collection_pid_path, object_data):
+    log(
+        "Book object detected, beginning processing of {}.".format(object_data["pid"]),
+        collection_pid_path,
+    )
+    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722994
+    log(
+        "Book object processing of {} complete.".format(object_data["pid"]),
+        collection_pid_path,
+    )
+
+
+def process_newspaper_object(collection_pid_path, object_data):
+    log(
+        "Newspaper object detected, beginning processing of {}.".format(
+            object_data["pid"]
+        ),
+        collection_pid_path,
+    )
+    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722993
+    log(
+        "Newspaper object processing of {} complete.".format(object_data["pid"]),
+        collection_pid_path,
+    )
+
+
+def process_newspaper_issue_object(collection_pid_path, object_data):
+    log(
+        "Newspaper issue object detected, beginning processing of {}.".format(
+            object_data["pid"]
+        ),
+        collection_pid_path,
+    )
+    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722998
+    log(
+        "Newspaper issue object processing of {} complete.".format(object_data["pid"]),
+        collection_pid_path,
+    )
+
 
 # Main
 collection_pid = get_pid_from_path(collection_pid_path)
 log("Beginning export of {}.".format(collection_pid), collection_pid_path)
 get_noncollection_object_datastreams(collection_pid_path)
-noncollection_pids = read_noncollection_pidfile(collection_pid_path)
 
+noncollection_pids = read_noncollection_pidfile(collection_pid_path)
 for pid in noncollection_pids:
     object_data = get_noncollection_object_data(pid)
     print(object_data)
@@ -225,8 +309,12 @@ for pid in noncollection_pids:
             collection_pid_path + "/" + pid, object_data["embargoes"]
         )
 
-    if object_data["cmodel"] in ['islandora:compoundCModel', 'islandora:bookCModel', 'islandora:newspaperCModel']:
-      process_hierarchichal_object(object_data)
+    if object_data["cmodel"] in [
+        "islandora:compoundCModel",
+        "islandora:bookCModel",
+        "islandora:newspaperCModel",
+    ]:
+        process_hierarchichal_object(collection_pid_path, object_data)
 
 
 write_collection_embargo_report(collection_pid_path, objects_with_embargoes)

@@ -79,7 +79,9 @@ def get_collection_children_pids(collection_pid_path):
     ).stdout.splitlines()
     if child_data["noncollections"]:
         log("{} contains noncollection children.".format(collection_pid_path))
-        collections_with_noncollection_children.append("{}, {}".format(len(child_data['noncollections']), collection_pid_path))
+        collections_with_noncollection_children.append(
+            "{}, {}".format(len(child_data["noncollections"]), collection_pid_path)
+        )
     return child_data
 
 
@@ -197,16 +199,16 @@ def export_collection(collection_pid_path):
 
     # Get PAGE_STREAM_X datastreams
     for i in range(1, 6):
-      subprocess.run(
-          [
-              "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
-                  collection_directory, collection_file_prefix, i
-              )
-          ],
-          shell=True,
-          capture_output=True,
-          text=True,
-      ).stdout.splitlines()
+        subprocess.run(
+            [
+                "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
+                    collection_directory, collection_file_prefix, i
+                )
+            ],
+            shell=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
 
     # Check for IP embargoes and log if found
     ip_embargo_check_result = subprocess.run(
