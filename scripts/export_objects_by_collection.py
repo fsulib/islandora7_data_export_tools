@@ -67,7 +67,6 @@ def get_noncollection_object_datastreams(pid_path):
     datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
     # metadata_datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
     # asset_datastreams = ["OBJ", "PDF"]
-
     log(
         "Beginning retrieval of the following datastreams for children of {}: {}.".format(
             pid_path, ", ".join(datastreams)
@@ -247,7 +246,33 @@ def process_compound_object(collection_pid_path, object_data):
         ),
         collection_pid_path,
     )
-    # drush -u 1 islandora_datastream_crud_fetch_pids --solr_query="RELS_EXT_isConstituentOf_uri_s:info\:fedora/fsu\:723002"
+    compound_directory = "{}/{}/{}".format(
+        output_path, collection_pid_path, object_data["pid"]
+    ).replace(":", "_")
+    if not os.path.isdir(compound_directory):
+        os.mkdir(compound_directory)
+    compound_children = subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isConstituentOf_uri_s:info\:fedora/{}'".format(
+                object_data["pid"].replace(":", "\\:")
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    write_file_to_pid_directory(
+        "{}".format(collection_pid_path),
+        "{}.child-noncollections.pids".format(object_data["pid"].replace(":", "_")),
+        "\n".join(compound_children),
+    )
+    collection_files = os.listdir(compound_directory + "/..")
+    for pid in compound_children:
+        for file in collection_files:
+            if file.startswith(pid.replace(":", "_")):
+                os.replace(
+                    compound_directory + "/../" + file, compound_directory + "/" + file
+                )
     log(
         "Compound object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
@@ -259,7 +284,27 @@ def process_book_object(collection_pid_path, object_data):
         "Book object detected, beginning processing of {}.".format(object_data["pid"]),
         collection_pid_path,
     )
-    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722994
+    book_directory = "{}/{}/{}".format(
+        output_path, collection_pid_path, object_data["pid"]
+    ).replace(":", "_")
+    if not os.path.isdir(book_directory):
+        os.mkdir(book_directory)
+    book_children = subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
+                object_data["pid"]
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    write_file_to_pid_directory(
+        "{}".format(collection_pid_path),
+        "{}.child-noncollections.pids".format(object_data["pid"].replace(":", "_")),
+        "\n".join(book_children),
+    )
+    get_noncollection_object_datastreams(collection_pid_path + "/" + object_data["pid"])
     log(
         "Book object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
@@ -273,21 +318,66 @@ def process_newspaper_object(collection_pid_path, object_data):
         ),
         collection_pid_path,
     )
-    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722993
+    newspaper_directory = "{}/{}/{}".format(
+        output_path, collection_pid_path, object_data["pid"]
+    ).replace(":", "_")
+    if not os.path.isdir(newspaper_directory):
+        os.mkdir(newspaper_directory)
+    newspaper_children = subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
+                object_data["pid"]
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    write_file_to_pid_directory(
+        "{}".format(collection_pid_path),
+        "{}.child-noncollections.pids".format(object_data["pid"].replace(":", "_")),
+        "\n".join(newspaper_children),
+    )
+    get_noncollection_object_datastreams(collection_pid_path + "/" + object_data["pid"])
+    for issue in newspaper_children:
+        issue_data = get_noncollection_object_data(issue)
+        process_newspaper_issue_object(collection_pid_path, object_data, issue_data)
     log(
         "Newspaper object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
     )
 
 
-def process_newspaper_issue_object(collection_pid_path, object_data):
+def process_newspaper_issue_object(collection_pid_path, newspaper_data, issue_data):
     log(
         "Newspaper issue object detected, beginning processing of {}.".format(
-            object_data["pid"]
+            issue_data["pid"]
         ),
         collection_pid_path,
     )
-    # drush -u 1 islandora_datastream_crud_fetch_pids --is_member_of=fsu:722998
+    newspaper_issue_directory = "{}/{}/{}/{}".format(
+        output_path, collection_pid_path, newspaper_data["pid"], issue_data["pid"]
+    ).replace(":", "_")
+    if not os.path.isdir(newspaper_issue_directory):
+        os.mkdir(newspaper_issue_directory)
+    newspaper_issue_children = subprocess.run(
+        [
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
+                issue_data["pid"]
+            )
+        ],
+        shell=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    write_file_to_pid_directory(
+        "{}/{}".format(collection_pid_path, newspaper_data["pid"]),
+        "{}.child-noncollections.pids".format(issue_data["pid"].replace(":", "_")),
+        "\n".join(newspaper_issue_children),
+    )
+    get_noncollection_object_datastreams(
+        "{}/{}/{}".format(collection_pid_path, newspaper_data["pid"], issue_data["pid"])
+    )
     log(
         "Newspaper issue object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
@@ -298,11 +388,9 @@ def process_newspaper_issue_object(collection_pid_path, object_data):
 collection_pid = get_pid_from_path(collection_pid_path)
 log("Beginning export of {}.".format(collection_pid), collection_pid_path)
 get_noncollection_object_datastreams(collection_pid_path)
-
 noncollection_pids = read_noncollection_pidfile(collection_pid_path)
 for pid in noncollection_pids:
     object_data = get_noncollection_object_data(pid)
-    print(object_data)
     object_filename_prefix = get_pid_file_prefix(object_data["pid"])
     if object_data["embargoes"]:
         write_object_embargo_report(
@@ -315,7 +403,5 @@ for pid in noncollection_pids:
         "islandora:newspaperCModel",
     ]:
         process_hierarchichal_object(collection_pid_path, object_data)
-
-
 write_collection_embargo_report(collection_pid_path, objects_with_embargoes)
 log("Finished with export of {}.".format(collection_pid), collection_pid_path)
