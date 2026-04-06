@@ -76,6 +76,7 @@ def get_noncollection_object_datastreams(pid_path):
     collection_directory = get_pid_directory_path(pid_path)
     collection_file_prefix = get_pid_file_prefix(pid_path)
     for datastream in datastreams:
+        print("Exporting {} datastreams from {}".format(datastream, pid_path))
         subprocess.run(
             [
                 "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(
@@ -86,6 +87,7 @@ def get_noncollection_object_datastreams(pid_path):
             capture_output=True,
             text=True,
         ).stdout.splitlines()
+        print("Exporting {} datastreams from {} complete.".format(datastream, pid_path))
     log(
         "Retrieval of datastreams for children of {} complete.".format(pid_path),
         collection_pid_path,
@@ -116,6 +118,7 @@ def get_noncollection_object_embargoes(noncollection_pid):
         embargoes.append(ip_embargo_data)
 
     # Scholar embargo check
+    """
     scholar_embargo_check_result = subprocess.run(
         [
             "drush -u 1 php-eval \"\$object = islandora_object_load('{}'); \$embargoes = islandora_scholar_embargo_get_embargoed(\$object); echo json_encode(\$embargoes);\"".format(
@@ -144,6 +147,7 @@ def get_noncollection_object_embargoes(noncollection_pid):
                 "expiry": scholar_embargo_expiry,
             }
             embargoes.append(scholar_embargo_data)
+    """
 
     if embargoes:
         objects_with_embargoes[noncollection_pid] = embargoes
