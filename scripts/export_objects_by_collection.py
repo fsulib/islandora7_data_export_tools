@@ -64,7 +64,7 @@ def read_noncollection_pidfile(collection_pid_path):
 
 
 def get_noncollection_object_datastreams(pid_path):
-    #datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
+    # datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
     datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
     # datastreams = ["OBJ", "PDF"]
     log(
@@ -295,8 +295,8 @@ def process_book_object(collection_pid_path, object_data):
         os.mkdir(book_directory)
     book_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
-                object_data["pid"]
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+                object_data["pid"].replace(":", "\\:")
             )
         ],
         shell=True,
@@ -329,8 +329,8 @@ def process_newspaper_object(collection_pid_path, object_data):
         os.mkdir(newspaper_directory)
     newspaper_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
-                object_data["pid"]
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+                object_data["pid"].replace(":", "\\:")
             )
         ],
         shell=True,
@@ -366,8 +366,8 @@ def process_newspaper_issue_object(collection_pid_path, newspaper_data, issue_da
         os.mkdir(newspaper_issue_directory)
     newspaper_issue_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --is_member_of={}".format(
-                issue_data["pid"]
+            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+                object_data["pid"].replace(":", "\\:")
             )
         ],
         shell=True,
