@@ -367,7 +367,7 @@ def process_newspaper_issue_object(collection_pid_path, newspaper_data, issue_da
     newspaper_issue_children = subprocess.run(
         [
             "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
-                object_data["pid"].replace(":", "\\:")
+                issue_data["pid"].replace(":", "\\:")
             )
         ],
         shell=True,
