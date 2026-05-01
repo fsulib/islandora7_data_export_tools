@@ -119,7 +119,6 @@ def get_noncollection_object_embargoes(noncollection_pid):
         embargoes.append(ip_embargo_data)
 
     # Scholar embargo check
-    """
     scholar_embargo_check_result = subprocess.run(
         [
             "drush -u 1 php-eval \"\$object = islandora_object_load('{}'); \$embargoes = islandora_scholar_embargo_get_embargoed(\$object); echo json_encode(\$embargoes);\"".format(
@@ -148,7 +147,6 @@ def get_noncollection_object_embargoes(noncollection_pid):
                 "expiry": scholar_embargo_expiry,
             }
             embargoes.append(scholar_embargo_data)
-    """
 
     if embargoes:
         objects_with_embargoes[noncollection_pid] = embargoes
