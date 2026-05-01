@@ -28,6 +28,7 @@ def log(message, collection_pid_path):
     print(formatted_message)
     collection_directory_path = get_pid_directory_path(collection_pid_path)
     collection_file_prefix = get_pid_file_prefix(collection_pid_path)
+    os.makedirs(collection_directory_path, exist_ok=True)
     logfile = open(
         "{}/{}_{}.log".format(
             collection_directory_path, collection_file_prefix, logtime
