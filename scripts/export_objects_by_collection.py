@@ -80,7 +80,7 @@ def get_noncollection_object_datastreams(pid_path):
         print("Exporting {} datastreams from {}".format(datastream, pid_path))
         subprocess.run(
             [
-                "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(
+                "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(
                     collection_directory, collection_file_prefix, datastream
                 )
             ],
@@ -105,7 +105,7 @@ def get_noncollection_object_embargoes(noncollection_pid):
     # IP embargo check
     ip_embargo_check_result = subprocess.run(
         [
-            "drush -u 1 sqlq \"select pid from islandora_ip_embargo_embargoes where pid = '{}'\"".format(
+            "drush -u 1 --root=/var/www/html sqlq \"select pid from islandora_ip_embargo_embargoes where pid = '{}'\"".format(
                 noncollection_pid
             )
         ],
@@ -121,7 +121,7 @@ def get_noncollection_object_embargoes(noncollection_pid):
     # Scholar embargo check
     scholar_embargo_check_result = subprocess.run(
         [
-            "drush -u 1 php-eval \"\$object = islandora_object_load('{}'); \$embargoes = islandora_scholar_embargo_get_embargoed(\$object); echo json_encode(\$embargoes);\"".format(
+            "drush -u 1 --root=/var/www/html php-eval \"\$object = islandora_object_load('{}'); \$embargoes = islandora_scholar_embargo_get_embargoed(\$object); echo json_encode(\$embargoes);\"".format(
                 noncollection_pid
             )
         ],
@@ -167,7 +167,7 @@ def get_noncollection_object_data(noncollection_pid):
     object_data["embargoes"] = get_noncollection_object_embargoes(noncollection_pid)
     object_data["cmodel"] = subprocess.run(
         [
-            "drush -u 1 php-eval '$obj = islandora_object_load(\"{}\"); print_r($obj->models[0]);'".format(
+            "drush -u 1 --root=/var/www/html php-eval '$obj = islandora_object_load(\"{}\"); print_r($obj->models[0]);'".format(
                 noncollection_pid
             )
         ],
@@ -256,7 +256,7 @@ def process_compound_object(collection_pid_path, object_data):
         os.mkdir(compound_directory)
     compound_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isConstituentOf_uri_s:info\:fedora/{}'".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isConstituentOf_uri_s:info\:fedora/{}'".format(
                 object_data["pid"].replace(":", "\\:")
             )
         ],
@@ -294,7 +294,7 @@ def process_book_object(collection_pid_path, object_data):
         os.mkdir(book_directory)
     book_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
                 object_data["pid"].replace(":", "\\:")
             )
         ],
@@ -328,7 +328,7 @@ def process_newspaper_object(collection_pid_path, object_data):
         os.mkdir(newspaper_directory)
     newspaper_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
                 object_data["pid"].replace(":", "\\:")
             )
         ],
@@ -365,7 +365,7 @@ def process_newspaper_issue_object(collection_pid_path, newspaper_data, issue_da
         os.mkdir(newspaper_issue_directory)
     newspaper_issue_children = subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_pids --solr_query='RELS_EXT_isMemberOf_uri_s:info\:fedora/{}'".format(
                 issue_data["pid"].replace(":", "\\:")
             )
         ],
