@@ -59,7 +59,7 @@ def get_collection_children_pids(collection_pid_path):
     collection_pid = collection_pid_path.split("/")[-1]
     child_data["collections"] = subprocess.run(
         [
-            "drush -u 1 islandora_datastream_crud_fetch_pids --content_model=islandora:collectionCModel --collection={}".format(
+            "drush -u 1 --root=/var/www/html islandora_datastream_crud_fetch_pids --content_model=islandora:collectionCModel --collection={}".format(
                 collection_pid
             )
         ],
@@ -69,7 +69,7 @@ def get_collection_children_pids(collection_pid_path):
     ).stdout.splitlines()
     child_data["noncollections"] = subprocess.run(
         [
-            "drush -u 1 islandora_datastream_crud_fetch_pids --without_cmodel=islandora:collectionCModel --collection={}".format(
+            "drush -u 1 --root=/var/www/html islandora_datastream_crud_fetch_pids --without_cmodel=islandora:collectionCModel --collection={}".format(
                 collection_pid
             )
         ],
@@ -116,7 +116,7 @@ def export_collection(collection_pid_path):
     # Get RELS-EXT datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELS-EXT --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELS-EXT --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -128,7 +128,7 @@ def export_collection(collection_pid_path):
     # Get DC datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DC --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DC --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -140,7 +140,7 @@ def export_collection(collection_pid_path):
     # Get MODS datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=MODS --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=MODS --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -152,7 +152,7 @@ def export_collection(collection_pid_path):
     # Get POLICY datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=POLICY --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=POLICY --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -164,7 +164,7 @@ def export_collection(collection_pid_path):
     # Get DESC-TEXT datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DESC-TEXT --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=DESC-TEXT --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -176,7 +176,7 @@ def export_collection(collection_pid_path):
     # Get RELATED-LINKS datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELATED-LINKS --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=RELATED-LINKS --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -188,7 +188,7 @@ def export_collection(collection_pid_path):
     # Get BANNER datastream
     subprocess.run(
         [
-            "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=BANNER --datastreams_directory={0}/..".format(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=BANNER --datastreams_directory={0}/..".format(
                 collection_directory, collection_file_prefix
             )
         ],
@@ -201,7 +201,7 @@ def export_collection(collection_pid_path):
     for i in range(1, 6):
         subprocess.run(
             [
-                "drush -u 1 -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
+                "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.pid --dsid=PAGE_STREAM_{2} --datastreams_directory={0}/..".format(
                     collection_directory, collection_file_prefix, i
                 )
             ],
@@ -213,7 +213,7 @@ def export_collection(collection_pid_path):
     # Check for IP embargoes and log if found
     ip_embargo_check_result = subprocess.run(
         [
-            "drush -u 1 sqlq \"select pid from islandora_ip_embargo_embargoes where pid = '{}'\"".format(
+            "drush -u 1 --root=/var/www/html sqlq \"select pid from islandora_ip_embargo_embargoes where pid = '{}'\"".format(
                 collection_pid
             )
         ],
