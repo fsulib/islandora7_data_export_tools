@@ -65,9 +65,8 @@ def read_noncollection_pidfile(collection_pid_path):
 
 
 def get_noncollection_object_datastreams(pid_path):
-    # datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
-    datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
-    # datastreams = ["OBJ", "PDF"]
+    datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
+    #datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
     log(
         "Beginning retrieval of the following datastreams for children of {}: {}.".format(
             pid_path, ", ".join(datastreams)
