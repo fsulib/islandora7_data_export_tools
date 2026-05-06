@@ -77,6 +77,20 @@ def get_noncollection_object_datastreams(pid_path):
     collection_file_prefix = get_pid_file_prefix(pid_path)
     for datastream in datastreams:
         print("Exporting {} datastreams from {}".format(datastream, pid_path))
+       
+        process = subprocess.Popen(
+            "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(collection_directory, collection_file_prefix, datastream),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            text=True,
+            bufsize=1
+        )
+        for line in process.stdout:
+            print(line, end='', flush=True)
+        process.wait()
+
+        """
         subprocess.run(
             [
                 "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(
@@ -87,6 +101,8 @@ def get_noncollection_object_datastreams(pid_path):
             capture_output=True,
             text=True,
         ).stdout.splitlines()
+        """
+        
         print("Exporting {} datastreams from {} complete.".format(datastream, pid_path))
     log(
         "Retrieval of datastreams for children of {} complete.".format(pid_path),
