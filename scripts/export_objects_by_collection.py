@@ -64,9 +64,12 @@ def read_noncollection_pidfile(collection_pid_path):
     return noncollection_pids
 
 
-def get_noncollection_object_datastreams(pid_path):
+def get_noncollection_object_datastreams(pid_path, skip_objs=False, skip_pdfs=False):
     datastreams = ["RELS-EXT", "MODS", "DC", "POLICY", "OBJ", "PDF"]
-    #datastreams = ["RELS-EXT", "MODS", "DC", "POLICY"]
+    if skip_objs:
+        datastreams.remove("OBJ")
+    if skip_pdfs:
+        datastreams.remove("PDF")
     log(
         "Beginning retrieval of the following datastreams for children of {}: {}.".format(
             pid_path, ", ".join(datastreams)
@@ -89,19 +92,6 @@ def get_noncollection_object_datastreams(pid_path):
         for line in process.stdout:
             print(line, end='', flush=True)
         process.wait()
-
-        """
-        subprocess.run(
-            [
-                "drush -u 1 --root=/var/www/html -y islandora_datastream_crud_fetch_datastreams --pid_file={0}/../{1}.child-noncollections.pids --dsid={2} --datastreams_directory={0}/".format(
-                    collection_directory, collection_file_prefix, datastream
-                )
-            ],
-            shell=True,
-            capture_output=True,
-            text=True,
-        ).stdout.splitlines()
-        """
         
         print("Exporting {} datastreams from {} complete.".format(datastream, pid_path))
     log(
@@ -322,7 +312,7 @@ def process_book_object(collection_pid_path, object_data):
         "{}.child-noncollections.pids".format(object_data["pid"].replace(":", "_")),
         "\n".join(book_children),
     )
-    get_noncollection_object_datastreams(collection_pid_path + "/" + object_data["pid"])
+    get_noncollection_object_datastreams(collection_pid_path + "/" + object_data["pid"], skip_pdfs=True)
     log(
         "Book object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
@@ -393,9 +383,7 @@ def process_newspaper_issue_object(collection_pid_path, newspaper_data, issue_da
         "{}.child-noncollections.pids".format(issue_data["pid"].replace(":", "_")),
         "\n".join(newspaper_issue_children),
     )
-    get_noncollection_object_datastreams(
-        "{}/{}/{}".format(collection_pid_path, newspaper_data["pid"], issue_data["pid"])
-    )
+    get_noncollection_object_datastreams("{}/{}/{}".format(collection_pid_path, newspaper_data["pid"], issue_data["pid"]), skip_pdfs=True)
     log(
         "Newspaper issue object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
