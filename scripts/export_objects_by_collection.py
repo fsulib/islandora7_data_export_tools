@@ -281,6 +281,7 @@ def process_compound_object(collection_pid_path, object_data):
                 os.replace(
                     compound_directory + "/../" + file, compound_directory + "/" + file
                 )
+    get_noncollection_object_datastreams(collection_pid_path + "/" + object_data["pid"])
     log(
         "Compound object processing of {} complete.".format(object_data["pid"]),
         collection_pid_path,
