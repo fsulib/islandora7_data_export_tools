@@ -6,7 +6,11 @@ import datetime
 import json
 import os
 import subprocess
+import sys
 import time
+
+
+sys.setrecursionlimit(5000)
 
 
 # Clear out data directory
