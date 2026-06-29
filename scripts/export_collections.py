@@ -21,7 +21,7 @@ subprocess.run(["mkdir ../output/root"], shell=True)
 # Variables
 logtime = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
 output_path = os.getcwd() + "/../output/root/"
-collections_to_process = ["fsu:digital_library"]
+collections_to_process = ["fsu:research_repository"]
 collections_processed = []
 collections_with_noncollection_children = []
 collections_with_ip_embargoes = []
@@ -275,7 +275,7 @@ def write_collections_with_ip_embargoes_list():
 # Main
 starttime = int(time.time())
 log("Beginning collection data export.")
-export_collection("fsu:digital_library")
+export_collection("fsu:research_repository")
 log("Finished collection data export.")
 write_collections_with_noncollection_children_list()
 write_collections_with_ip_embargoes_list()
